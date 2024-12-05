@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme-color" content=#58b77a>
+  <title>macos中几种常见的定时器总结 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <script id="hexo-configurations">
+  var CONFIG = {
+    root: '/',
+    theme: 'lx',
+    version: '0.4.4',
+    localsearch:{
+      "enable": false,
+      "trigger": "auto",
+      "top_n_per_article": 1,
+      "unescape": false,
+      "preload": false
+      },
+    path: 'null'
+  };
+</script>
+
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/css/main.min.css">
+  
+  <style type="text/css">
+    pre,
+    code {
+      font-family: 'Fira Code', monospace;
+    }
+    html {
+      font-family: sans-serif;
+    }
+    body {
+      font-family: sans-serif;
+    }
+    h1, h2, h3, h4, h5, figure {
+      font-family: sans-serif;
+    }
+    .menu-container{
+      font-family: sans-serif;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.jside.menu.min.js"></script>
+	<script>
+	$(document).ready(function(){
+	$(".menu-container").jSideMenu({
+	    jSidePosition: "position-right",
+	    jSideSticky: true,
+	    jSideSkin: "",
+	     });
+	}); 
+	</script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body>
+<div class="single">
+
+<div id="page">
+<div class="header">
+  <div id="lx-aside" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/post_cover.min.jpeg)" data-stellar-background-ratio="0.5">
+    <div class="overlay">
+      
+      <div class="page-title">
+        <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="John Doe"></a></div>
+        <span>2024-10-06</span>
+        <h2>macos中几种常见的定...</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/macos/" rel="tag">macos</a> <i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/oc/" rel="tag">oc</a></div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+<div id="lx-main-content">
+  <div class="lx-post">
+    <div class="lx-entry padding">
+      <div>
+        <ol>
+<li>NSTimer：Foundation 框架中最常用的定时器，基于RunLoop，支持定时触发方法或 block 。<span id="more"></span></li>
+</ol>
+<ul>
+<li>使用简单，适合在主线程中涉及到UI的操作里用，因为主线程的RunLoop默认开启，主线程里创建的NSTimer也默认启动。如果想在子线程用NSTimer ，需要手动将其添加到子线程的 RunLoop 并启动。</li>
+<li>注意事项：依赖RunLoop，如果Runloop被阻塞，Timer不准</li>
+<li>注意事项：循环引用导致内存泄漏问题，如下代码中所示</li>
+</ul>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#import &lt;Cocoa/Cocoa.h&gt;</span><br><span class="line"></span><br><span class="line">@interface LeakyTimerExample : NSObject</span><br><span class="line">@property (strong, nonatomic) NSTimer *timer;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation LeakyTimerExample</span><br><span class="line"></span><br><span class="line">- (instancetype)init &#123;</span><br><span class="line">    self = [super init];</span><br><span class="line">    if (self) &#123;</span><br><span class="line">        // 创建一个定时器，目标是 self</span><br><span class="line">        self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0</span><br><span class="line">                                                      target:self</span><br><span class="line">                                                    selector:@selector(timerFired)</span><br><span class="line">                                                    userInfo:nil</span><br><span class="line">                                                     repeats:YES];</span><br><span class="line">        NSLog(@&quot;Timer started.&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return self;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)timerFired &#123;</span><br><span class="line">    NSLog(@&quot;Timer fired!&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (void)dealloc &#123;</span><br><span class="line">    NSLog(@&quot;LeakyTimerExample is being deallocated.&quot;);</span><br><span class="line">    [self.timer invalidate]; // 即使无效化，也不会打破循环引用</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        LeakyTimerExample *example = [[LeakyTimerExample alloc] init];</span><br><span class="line">        NSLog(@&quot;Example created.&quot;);</span><br><span class="line">        </span><br><span class="line">        // 模拟释放对象</span><br><span class="line">        example = nil;</span><br><span class="line">        </span><br><span class="line">        // Run loop 用于保持程序运行，观察泄漏情况</span><br><span class="line">        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:5.0]];</span><br><span class="line">        NSLog(@&quot;Main function finished.&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>运行上述代码时，输出日志中不会出现 LeakyTimerExample is being deallocated，即使 example &#x3D; nil;，定时器仍在触发，说明 LeakyTimerExample 未被释放。<br>经典的循环引用问题：NSTimer 对 target (即 self) 持有强引用，self 同时持有对 NSTimer 的强引用。<br>解决方法：<br>（1）弱引用：创建一个弱引用的 self（weakSelf），防止在 block 内部捕获 self，使用block 来定义触发事件，在 block 内部，通过 weakSelf 来访问 self 的方法，避免循环引用。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__weak typeof(self) weakSelf = self; // 创建弱引用，避免循环引用</span><br><span class="line">self.timer = [NSTimer scheduledTimerWithTimeInterval:1.0</span><br><span class="line">                                              repeats:YES</span><br><span class="line">                                                block:^(NSTimer * _Nonnull timer) &#123;</span><br><span class="line">    [weakSelf timerFired]; // 使用弱引用调用方法</span><br><span class="line">&#125;];</span><br></pre></td></tr></table></figure>
+<p>（2）创建一个中间对象作为 NSTimer 的 target 来持有对 self 的弱引用，能解决循环引用，但是感觉没什么用，绕了个圈子。</p>
+<ol start="2">
+<li>CADisplayLink：苹果系统中的与屏幕刷新率有关的定时器类，会在每一帧刷新之前调用指定的目标方法。适用于动画绘制等每帧执行UI更新的场景。</li>
+<li>GCD（Grand Central Dispatch）：苹果用于并发编程的底层技术，核心概念是将任务放在队列里，并由系统在多个线程上并发执行。</li>
+</ol>
+<ul>
+<li>GCD 定时器是通过 dispatch_source_t 类型来实现的，使用 dispatch_source_create 创建定时器，并通过 dispatch_source_set_timer 配置定时器的时间间隔。</li>
+<li>相比NSTimer，GCD 的定时器更灵活高效，可以在任意队列上执行任务。在后台执行的定时任务非常适合。</li>
+<li>使用示例：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Foundation/Foundation.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        dispatch_source_t timer = dispatch_source_create(DISPATCH_SOURCE_TYPE_TIMER, 0, 0, dispatch_get_main_queue());</span><br><span class="line">        </span><br><span class="line">        // 设置定时器的触发时间和时间间隔</span><br><span class="line">        // 第一个参数: 初始触发时间，立即开始（DISPATCH_TIME_NOW）</span><br><span class="line">        // 第二个参数: 间隔时间，设置为 1 秒</span><br><span class="line">        // 第三个参数: 最小延迟时间，这里设为0</span><br><span class="line">        dispatch_source_set_timer(timer, DISPATCH_TIME_NOW, 1.0 * NSEC_PER_SEC, 0);</span><br><span class="line">        </span><br><span class="line">        // 设置触发时要执行的任务</span><br><span class="line">        dispatch_source_set_event_handler(timer, ^&#123;</span><br><span class="line">            NSLog(@&quot;Timer fired! Current time: %@&quot;, [NSDate date]);</span><br><span class="line">        &#125;);</span><br><span class="line">        </span><br><span class="line">        // 启动定时器</span><br><span class="line">        dispatch_resume(timer);</span><br><span class="line">       </span><br><span class="line">        // 使用 RunLoop 保持主线程活跃，等待定时器事件触发</span><br><span class="line">        [[NSRunLoop currentRunLoop] run];</span><br><span class="line">        </span><br><span class="line">        // 取消定时器</span><br><span class="line">        // dispatch_source_cancel(timer);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
+</ul>
+<p>一些个注意事项：</p>
+<ul>
+<li>GCD 定时器不会自动被释放，必须手动执行dispatch_source_cancel() 来释放对象，以免泄露。</li>
+<li>也是需要在 block 内部引用 self 时，应使用 __weak typeof(self) weakSelf &#x3D; self; 来避免强引用。</li>
+<li>dispatch_source_cancel() 执行完再执行  dispatch_resume() 造成crash</li>
+</ul>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lx-navigation">
+	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2024/12/06/flutterCursor/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Next</span>
+						<h3>flutter...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+        <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2024/09/26/hello-world/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Prev</span>
+						<h3>Hello W...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+</div>
+
+<footer>
+  <div>
+  Copyright &copy; 2024.<a href="/">Hexo</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
+  </div>
+</footer>
+
+</div>
+
+<button class="hamburger hamburger--arrow-r" type="button" title="menu">
+    <div class="hamburger-box">
+      <div class="hamburger-inner"></div>
+    </div>
+</button>
+<div class="menu visibility">
+  <div class="menu-head">
+    <span class="layer">
+      <div class="col">
+        <div class="row for-pic">
+          <div class="profile-pic">
+            <a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="John Doe"/></a>
+          </div>
+        </div>
+        <div class="row for-name">
+          <p>John Doe</p>
+          <span class="tagline">Hello, World!</span>
+        </div>
+      </div>
+    </span>
+  </div>
+  <nav class="menu-container">
+  <ul class="menu-items">
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>Home</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+    
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-bookmark fa-fw"></i>Pages</span>
+        <ul>
+          <li><a href="/guestbook/">Guestbook</a></li>
+        <li><a href="/about/">About</a></li>
+        </ul>
+    </li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-link fa-fw"></i>Friends</span>
+        <ul>
+          <li> <a href="https://lx.js.org" target="_blank">Theme-Lx</a></li>
+        </ul>
+    </li>
+  </ul>
+  </nav>
+</div>
+
+<div class="gototop js-top">
+  <a href="#" class="js-gotop"><i class="fa fa-arrow-up"></i></a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.easing.min.js"></script>
+<script>
+(function () {
+	"use strict";
+	var goToTop = function() {
+		$(".js-gotop").on("click", function(event){
+			event.preventDefault();
+			$("html, body").animate({
+				scrollTop: $("html").offset().top
+			}, 500, "easeInOutExpo");
+			return false;
+		});
+		$(window).scroll(function(){
+			var $win = $(window);
+			if ($win.scrollTop() > 200) {
+				$(".js-top").addClass("active");
+			} else {
+				$(".js-top").removeClass("active");
+			}
+		});
+	};
+	$(function(){
+		goToTop();
+	});
+}());
+</script>
+
+
+</body>
+</html>
