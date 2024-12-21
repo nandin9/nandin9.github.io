@@ -75,7 +75,7 @@
         <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="John Doe"></a></div>
         <span>2024-12-15</span>
         <h2>flutter文本的桌面...</h2>
-        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/macos/" rel="tag">macos</a></div>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/flutter/" rel="tag">flutter</a> <i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/macos/" rel="tag">macos</a></div>
         
       </div>
     </div>
@@ -87,16 +87,20 @@
       <div>
         <p>flutter富文本桌面端的鼠标cursor样式对优化交互体验蛮重要的，记录一些工作中自己踩过的坑 …</p>
 <ol>
-<li>有些可点击元素外面包一个mouseregion，设置成click样式的cursor为什么不起作用，它还是 text 的样式？</li>
+<li><strong>有些可点击元素外面包一个mouseregion，设置成click样式的cursor为什么不起作用，它还是 text 的样式？</strong></li>
 </ol>
 <ul>
-<li>MouseRegion 的 cursor 设置作用于其直接捕获的区域。如果子 widget 自行定义了鼠标样式，根据事件传递，内部的光标样式会优先生效，特别是 Text 或 SelectableText 会默认使用 SystemMouseCursors.text 来表明其可选中。</li>
-<li>解决方法1（flutter 3.13以下），使用IgnorePointer可以成功设置cursor样式，但是这样子widget接受不到鼠标事件了<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MouseRegion(</span><br><span class="line">  cursor: SystemMouseCursors.click, // 强制设置鼠标为点击样式</span><br><span class="line">  child: IgnorePointer(</span><br><span class="line">    ignoring: true, // 阻止鼠标事件传递到子 widget</span><br><span class="line">    child: Text(</span><br><span class="line">      &#x27;这是一个文本&#x27;,</span><br><span class="line">      style: TextStyle(xxxx),</span><br><span class="line">    ),</span><br><span class="line">  ),</span><br><span class="line">)</span><br></pre></td></tr></table></figure></li>
-<li>解决方法2（flutter 3.13及以上），text的默认鼠标样式发生了变化，并且引入了DefaultSelectionStyle，所以直接在上层用DefaultSelectionStyle 设置，例如<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// flutter 3.13开始</span><br><span class="line"> result = MouseRegion(</span><br><span class="line">     cursor: DefaultSelectionStyle.of(context).mouseCursor ?? SystemMouseCursors.text,</span><br><span class="line">     child: result,</span><br><span class="line"> );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<li><p>MouseRegion 的 cursor 设置作用于其直接捕获的区域。如果子 widget 自行定义了鼠标样式，根据事件传递，内部的光标样式会优先生效，特别是 Text 或 SelectableText 会默认使用 SystemMouseCursors.text 来表明其可选中。</p>
+<span id="more"></span>
+</li>
+<li><p>解决方法1（flutter 3.13以下），使用IgnorePointer可以成功设置cursor样式，但是这样子widget接受不到鼠标事件了</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">MouseRegion(</span><br><span class="line">  cursor: SystemMouseCursors.click, // 强制设置鼠标为点击样式</span><br><span class="line">  child: IgnorePointer(</span><br><span class="line">    ignoring: true, // 阻止鼠标事件传递到子 widget</span><br><span class="line">    child: Text(</span><br><span class="line">      &#x27;这是一个文本&#x27;,</span><br><span class="line">      style: TextStyle(xxxx),</span><br><span class="line">    ),</span><br><span class="line">  ),</span><br><span class="line">)</span><br></pre></td></tr></table></figure></li>
+<li><p>解决方法2（flutter 3.13及以上），text的默认鼠标样式发生了变化，并且引入了DefaultSelectionStyle，所以直接在上层用DefaultSelectionStyle 设置，例如</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">// flutter 3.13开始</span><br><span class="line"> result = MouseRegion(</span><br><span class="line">     cursor: DefaultSelectionStyle.of(context).mouseCursor ?? SystemMouseCursors.text,</span><br><span class="line">     child: result,</span><br><span class="line"> );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">// 使用 DefaultSelectionStyle 设置鼠标cursor样式 </span><br><span class="line">MouseRegion(</span><br><span class="line">  cursor: SystemMouseCursors.click, // 设置鼠标为点击样式</span><br><span class="line">  child: DefaultSelectionStyle(</span><br><span class="line">    selectionColor: Colors.blue.withOpacity(0.3),</span><br><span class="line">    cursorColor: Colors.red,</span><br><span class="line">    child: Text(</span><br><span class="line">      &#x27;鼠标悬停时是点击样式，文本可选择。&#x27;,</span><br><span class="line">      style: TextStyle(fontSize: 16),</span><br><span class="line">    ),</span><br><span class="line">  ),</span><br><span class="line">)</span><br></pre></td></tr></table></figure></li>
 </ul>
 <ol start="2">
-<li>多行的text，最后一行文本的hover热区怎么变成最大宽度了？<br>背景：一个Row，其child是Flexible，Flexible的child是多行的文本，此时多行文本最后一行的 hover 热区会扩展到整个行宽，为什么？</li>
+<li><strong>多行的text，最后一行文本的hover热区怎么变成最大宽度了？</strong><br>背景：一个Row，其child是Flexible，Flexible的child是多行的文本，此时多行文本最后一行的 hover 热区会扩展到整个行宽，为什么？</li>
 </ol>
 <ul>
 <li>Row 在布局时会尝试分配每个子 widget 的空间。对于 Flexible，它会填充可用的水平空间，而不是根据其子 widget 的实际尺寸收缩。</li>
@@ -104,7 +108,7 @@
 <li>当多行的 Text 被包裹在 Flexible 中，Text 的宽度会被扩展到 Flexible 的宽度。所以即使最后一行文字的视觉显示范围较短，其热区仍然会覆盖整个 Flexible 的宽度，当鼠标 hover 在最后一行的可见范围之外但在同一行宽度的范围内时，仍会触发 hover 效果。如果最后是一个可点击的元素，那点击这个范围都会触发最后一个元素的点击事件…</li>
 </ul>
 <ol start="3">
-<li>markdown链接后面的文本鼠标hover样式怎么也同链接一样的 [SystemMouseCursors.click] 了？<br>背景：markdown文本中间有链接，链接后的普通文本上鼠标hover样式也变成[SystemMouseCursors.click]<br>记录一下查bug的过程，首先从 flutter_markdown 的源码入手：</li>
+<li><strong>markdown链接后面的文本鼠标hover样式怎么也同链接一样的 [SystemMouseCursors.click] 了？</strong><br>背景：markdown文本中间有链接，链接后的普通文本上鼠标hover样式也变成[SystemMouseCursors.click]<br>记录一下查bug的过程，首先从 flutter_markdown 的源码入手：</li>
 </ol>
 <ul>
 <li><p>builder.dart 中有这么一段，只要当前的 linkHandlers 不空， 那么就会给 TextSpan 设置一个recognizer</p>
@@ -116,7 +120,7 @@
 </li>
 <li><p>linkHandlers 相关的逻辑，在visitElementBefore 中如果是链接话往里添加一个recognizer，在visitElementAfter的时候 remove，看着没任何问题，</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">// visitElementBefore </span><br><span class="line">if (tag == &#x27;a&#x27;) &#123;</span><br><span class="line">    final String? text = extractTextFromElement(element);</span><br><span class="line">    // Don&#x27;t add empty links</span><br><span class="line">    if (text == null) &#123;</span><br><span class="line">       return false;</span><br><span class="line">    &#125;</span><br><span class="line">    final String? destination = element.attributes[&#x27;href&#x27;];</span><br><span class="line">    final String title = element.attributes[&#x27;title&#x27;] ?? &#x27;&#x27;;</span><br><span class="line"></span><br><span class="line">    _linkHandlers.add(</span><br><span class="line">       delegate.createLink(text, destination, title),</span><br><span class="line">    );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// visitElementAfter </span><br><span class="line">else if (tag == &#x27;a&#x27;) &#123;</span><br><span class="line">    _linkHandlers.removeLast();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure></li>
-<li><p>那么问题就很明显了，就是在上层调用的时候，markdown文本的标签有问题了，文本在经过一层链接识别后，没有正确的构造标签，链接后面的文本都变成了 <a> ，导致链接后面的普通文本也有了和链接一样的鼠标hover样式</p>
+<li><p>那么问题就很明显了，就是在上层调用的时候，markdown文本的标签有问题了，文本在经过一层链接识别后，没有正确的构造标签，链接后面的文本都变成了 <code>&lt;a&gt;</code> ，导致链接后面的普通文本也有了和链接一样的鼠标hover样式</p>
 </li>
 <li><p>如果这个比较难修，有个临时解决方法，就是在这里加一个cursor 样式为text，不会影响链接的样式，也能让链接后的普通文本变成text样式</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">TextSpan(</span><br><span class="line">      style: _isInBlockquote</span><br><span class="line">          ? styleSheet.blockquote!.merge(_inlines.last.style)</span><br><span class="line">          : _inlines.last.style,</span><br><span class="line">      text: trimText(text.text),</span><br><span class="line">      recognizer: _linkHandlers.isNotEmpty ? _linkHandlers.last : null,),</span><br><span class="line">      **cursor: SystemMouseCursors.text,**</span><br></pre></td></tr></table></figure></li>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme-color" content=#58b77a>
+  <title>AppKit/UIKit/SwiftUI... | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <script id="hexo-configurations">
+  var CONFIG = {
+    root: '/',
+    theme: 'lx',
+    version: '0.4.4',
+    localsearch:{
+      "enable": false,
+      "trigger": "auto",
+      "top_n_per_article": 1,
+      "unescape": false,
+      "preload": false
+      },
+    path: 'null'
+  };
+</script>
+
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/css/main.min.css">
+  
+  <style type="text/css">
+    pre,
+    code {
+      font-family: 'Fira Code', monospace;
+    }
+    html {
+      font-family: sans-serif;
+    }
+    body {
+      font-family: sans-serif;
+    }
+    h1, h2, h3, h4, h5, figure {
+      font-family: sans-serif;
+    }
+    .menu-container{
+      font-family: sans-serif;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.jside.menu.min.js"></script>
+	<script>
+	$(document).ready(function(){
+	$(".menu-container").jSideMenu({
+	    jSidePosition: "position-right",
+	    jSideSticky: true,
+	    jSideSkin: "",
+	     });
+	}); 
+	</script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body>
+<div class="single">
+
+<div id="page">
+<div class="header">
+  <div id="lx-aside" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/post_cover.min.jpeg)" data-stellar-background-ratio="0.5">
+    <div class="overlay">
+      
+      <div class="page-title">
+        <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="John Doe"></a></div>
+        <span>2024-10-03</span>
+        <h2>AppKit/UIKit...</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/flutter/" rel="tag">flutter</a> <i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/macos/" rel="tag">macos</a> <i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/swiftui/" rel="tag">swiftui</a></div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+<div id="lx-main-content">
+  <div class="lx-post">
+    <div class="lx-entry padding">
+      <div>
+        <p>AppKit 、UIKit和SwiftUI ， Apple 提供的三种不同的框架，用于构建客户端UI，面向不同的开发场景和目标设备。</p>
+<ol>
+<li>AppKit：macOS 的原生 UI 框架<br>特点：</li>
+</ol>
+<ul>
+<li>面向对象：以面向对象的方式组织 UI 组件（如 NSWindow、NSButton）。</li>
+<li>功能强大：提供了 macOS 特有的窗口管理和高级用户界面功能（如菜单栏、工具栏、键盘快捷键支持）。</li>
+<li>历史悠久：自 macOS 的前身 NeXTSTEP 系统开始就存在，是成熟且功能丰富的框架。</li>
+<li>低级控制：开发者需要手动管理窗口和视图的生命周期。</li>
+<li>适用场景：构建 macOS 原生应用程序。</li>
+</ul>
+<span id="more"></span>
+
+<p>Objective-C 和 Swift 都是apple官方支持的编程语言，所以无论哪种语言，都可以使用该原生框架。<br>AppKit with Swift 示例代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">import Cocoa</span><br><span class="line"></span><br><span class="line">class AppDelegate: NSObject, NSApplicationDelegate &#123;</span><br><span class="line">    var window: NSWindow!</span><br><span class="line"></span><br><span class="line">    func applicationDidFinishLaunching(_ notification: Notification) &#123;</span><br><span class="line">        let contentView = NSView(frame: NSRect(x: 0, y: 0, width: 400, height: 300))</span><br><span class="line">        let button = NSButton(frame: NSRect(x: 150, y: 150, width: 100, height: 30))</span><br><span class="line">        button.title = &quot;Click Me&quot;</span><br><span class="line">        contentView.addSubview(button)</span><br><span class="line"></span><br><span class="line">        window = NSWindow(contentRect: NSRect(x: 100, y: 100, width: 400, height: 300),</span><br><span class="line">                          styleMask: [.titled, .closable, .resizable],</span><br><span class="line">                          backing: .buffered,</span><br><span class="line">                          defer: false)</span><br><span class="line">        window.contentView = contentView</span><br><span class="line">        window.makeKeyAndOrderFront(nil)</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>AppKit with Objective-C 示例代码：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;Cocoa/Cocoa.h&gt;</span><br><span class="line"></span><br><span class="line">@interface AppDelegate : NSObject &lt;NSApplicationDelegate&gt;</span><br><span class="line">@property (strong) NSWindow *window;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation AppDelegate</span><br><span class="line"></span><br><span class="line">- (void)applicationDidFinishLaunching:(NSNotification *)notification &#123;</span><br><span class="line">    self.window = [[NSWindow alloc] initWithContentRect:NSMakeRect(100, 100, 400, 300)</span><br><span class="line">                                               styleMask:(NSWindowStyleMaskTitled |</span><br><span class="line">                                                          NSWindowStyleMaskResizable |</span><br><span class="line">                                                          NSWindowStyleMaskClosable)</span><br><span class="line">                                                 backing:NSBackingStoreBuffered</span><br><span class="line">                                                   defer:NO];</span><br><span class="line">    [self.window setTitle:@&quot;AppKit with Objective-C&quot;];</span><br><span class="line">    [self.window makeKeyAndOrderFront:nil];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, const char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        NSApplication *app = [NSApplication sharedApplication];</span><br><span class="line">        AppDelegate *delegate = [[AppDelegate alloc] init];</span><br><span class="line">        [app setDelegate:delegate];</span><br><span class="line">        [app run];</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>UIKit: iOS、iPadOS 和 tvOS 的原生 UI 框架</li>
+</ol>
+<p>特点：</p>
+<ul>
+<li>事件驱动：以响应触摸、手势等交互为核心。</li>
+<li>面向对象：以视图控制器（UIViewController）为中心，管理应用的界面和生命周期。</li>
+<li>强大的动画支持：提供了强大且简单的动画 API。</li>
+<li>适用场景：构建 iOS、iPadOS 和 tvOS 的原生应用程序。</li>
+</ul>
+<p>Objective-C 和 Swift 都是apple官方支持的编程语言，所以无论哪种语言，都可以使用该原生框架。<br>AppKit with Swift 示例代码：<br>UIKit with Objective-C</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#import &lt;UIKit/UIKit.h&gt;</span><br><span class="line"></span><br><span class="line">@interface AppDelegate : UIResponder &lt;UIApplicationDelegate&gt;</span><br><span class="line">@property (strong, nonatomic) UIWindow *window;</span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">@implementation AppDelegate</span><br><span class="line"></span><br><span class="line">- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions &#123;</span><br><span class="line">    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];</span><br><span class="line">    UIViewController *viewController = [[UIViewController alloc] init];</span><br><span class="line">    viewController.view.backgroundColor = [UIColor whiteColor];</span><br><span class="line">    self.window.rootViewController = viewController;</span><br><span class="line">    [self.window makeKeyAndVisible];</span><br><span class="line">    return YES;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">@end</span><br><span class="line"></span><br><span class="line">int main(int argc, char * argv[]) &#123;</span><br><span class="line">    @autoreleasepool &#123;</span><br><span class="line">        return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>UIKit with Swift：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import UIKit</span><br><span class="line"></span><br><span class="line">@main</span><br><span class="line">class AppDelegate: UIResponder, UIApplicationDelegate &#123;</span><br><span class="line">    var window: UIWindow?</span><br><span class="line"></span><br><span class="line">    func application(</span><br><span class="line">        _ application: UIApplication,</span><br><span class="line">        didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?</span><br><span class="line">    ) -&gt; Bool &#123;</span><br><span class="line">        window = UIWindow(frame: UIScreen.main.bounds)</span><br><span class="line">        let viewController = UIViewController()</span><br><span class="line">        viewController.view.backgroundColor = .white</span><br><span class="line">        window?.rootViewController = viewController</span><br><span class="line">        window?.makeKeyAndVisible()</span><br><span class="line">        return true</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<ol start="3">
+<li>SwiftUI：Apple 在 2019 年 WWDC 发布的一种现代化的声明式框架，用于开发跨平台的用户界面</li>
+</ol>
+<p>特点：</p>
+<ul>
+<li>统一的跨平台开发：可以通过一套代码同时构建 macOS、iOS、iPadOS、watchOS 和 tvOS 的应用，而 AppKit 和 UIKit 需要- 单独编写针对不同平台的代码。</li>
+<li>声明式编程：通过描述视图的最终状态，而不是编写逐步的构建逻辑，简化了 UI 的创建和维护。</li>
+<li>实时预览：Xcode 提供的 Canvas 实时预览功能让开发者可以在不运行应用的情况下，动态查看界面的变化效果，可以提升开发效率，尤其是在 UI 调整时。</li>
+<li>数据驱动和绑定：使用 @State、@Binding、@Environment 等属性包装器，实现响应式数据流，自动更新界面，数据变化后无需手动刷新 UI，减少了状态管理的复杂性。</li>
+<li>模块化设计：SwiftUI 中的每个视图都可以被视为一个独立的组件，支持高度的复用。<br>简洁的动画支持：内置动画支持，只需几行代码即可实现复杂的动画效果，且实现更加直观、易读。</li>
+</ul>
+<p>4. </p>
+<table>
+<thead>
+<tr>
+<th><strong>对比项</strong></th>
+<th><strong>SwiftUI</strong></th>
+<th><strong>AppKit&#x2F;UIKit</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>开发效率</strong></td>
+<td>声明式语法，减少代码量；更高效的数据驱动开发。</td>
+<td>手动管理视图和事件，代码量更大，开发效率相对较低。</td>
+</tr>
+<tr>
+<td><strong>跨平台支持</strong></td>
+<td>一套代码支持多平台（macOS、iOS、watchOS 等）。</td>
+<td>需要针对不同平台分别使用 AppKit 或 UIKit。</td>
+</tr>
+<tr>
+<td><strong>学习曲线</strong></td>
+<td>学习曲线较低，尤其适合新手开发者。</td>
+<td>学习曲线较高，需深入理解视图层次和事件处理机制。</td>
+</tr>
+<tr>
+<td><strong>响应式架构</strong></td>
+<td>基于数据驱动，UI 自动响应数据变化。</td>
+<td>需要手动更新界面（如调用 <code>reloadData</code> 等方法）。</td>
+</tr>
+<tr>
+<td><strong>动画支持</strong></td>
+<td>动画内置且语法简洁，响应式动画由数据驱动。</td>
+<td>动画需要手动定义，复杂动画代码量较多。</td>
+</tr>
+<tr>
+<td><strong>代码复用性</strong></td>
+<td>支持跨平台的高复用组件；组件化程度更高。</td>
+<td>代码复用性相对较低，需要针对平台编写特定实现。</td>
+</tr>
+<tr>
+<td><strong>UI 调试工具</strong></td>
+<td>提供实时预览（Canvas），可以直接在 Xcode 中查看 UI 变化。</td>
+<td>无法直接预览，需要运行应用程序才能看到效果。</td>
+</tr>
+<tr>
+<td><strong>兼容性</strong></td>
+<td>与 AppKit 和 UIKit 互操作性强，可渐进式采用。</td>
+<td>独立框架，无法跨平台协作。</td>
+</tr>
+<tr>
+<td><strong>生态支持</strong></td>
+<td>新框架，功能逐渐完善，但生态系统尚在发展中。</td>
+<td>成熟框架，生态系统丰富，支持的第三方库广泛。</td>
+</tr>
+</tbody></table>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lx-navigation">
+	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2024/10/06/Timer/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Next</span>
+						<h3>macos中几...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+        <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2024/09/26/hello-world/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Prev</span>
+						<h3>Hello W...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+</div>
+
+<footer>
+  <div>
+  Copyright &copy; 2024.<a href="/">Hexo</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
+  </div>
+</footer>
+
+</div>
+
+<button class="hamburger hamburger--arrow-r" type="button" title="menu">
+    <div class="hamburger-box">
+      <div class="hamburger-inner"></div>
+    </div>
+</button>
+<div class="menu visibility">
+  <div class="menu-head">
+    <span class="layer">
+      <div class="col">
+        <div class="row for-pic">
+          <div class="profile-pic">
+            <a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="John Doe"/></a>
+          </div>
+        </div>
+        <div class="row for-name">
+          <p>John Doe</p>
+          <span class="tagline">Hello, World!</span>
+        </div>
+      </div>
+    </span>
+  </div>
+  <nav class="menu-container">
+  <ul class="menu-items">
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>Home</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+    
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-bookmark fa-fw"></i>Pages</span>
+        <ul>
+          <li><a href="/guestbook/">Guestbook</a></li>
+        <li><a href="/about/">About</a></li>
+        </ul>
+    </li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-link fa-fw"></i>Friends</span>
+        <ul>
+          <li> <a href="https://lx.js.org" target="_blank">Theme-Lx</a></li>
+        </ul>
+    </li>
+  </ul>
+  </nav>
+</div>
+
+<div class="gototop js-top">
+  <a href="#" class="js-gotop"><i class="fa fa-arrow-up"></i></a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.easing.min.js"></script>
+<script>
+(function () {
+	"use strict";
+	var goToTop = function() {
+		$(".js-gotop").on("click", function(event){
+			event.preventDefault();
+			$("html, body").animate({
+				scrollTop: $("html").offset().top
+			}, 500, "easeInOutExpo");
+			return false;
+		});
+		$(window).scroll(function(){
+			var $win = $(window);
+			if ($win.scrollTop() > 200) {
+				$(".js-top").addClass("active");
+			} else {
+				$(".js-top").removeClass("active");
+			}
+		});
+	};
+	$(function(){
+		goToTop();
+	});
+}());
+</script>
+
+
+</body>
+</html>
