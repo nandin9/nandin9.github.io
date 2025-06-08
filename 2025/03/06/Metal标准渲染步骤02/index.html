@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme-color" content=#58b77a>
+  <title>Metal Learning 02：Metal渲染步骤 | 🥱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Nandin">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <script id="hexo-configurations">
+  var CONFIG = {
+    root: '/',
+    theme: 'lx',
+    version: '0.4.4',
+    localsearch:{
+      "enable": false,
+      "trigger": "auto",
+      "top_n_per_article": 1,
+      "unescape": false,
+      "preload": false
+      },
+    path: 'null'
+  };
+</script>
+
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/css/main.min.css">
+  
+  <style type="text/css">
+    pre,
+    code {
+      font-family: 'Fira Code', monospace;
+    }
+    html {
+      font-family: sans-serif;
+    }
+    body {
+      font-family: sans-serif;
+    }
+    h1, h2, h3, h4, h5, figure {
+      font-family: sans-serif;
+    }
+    .menu-container{
+      font-family: sans-serif;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.jside.menu.min.js"></script>
+	<script>
+	$(document).ready(function(){
+	$(".menu-container").jSideMenu({
+	    jSidePosition: "position-right",
+	    jSideSticky: true,
+	    jSideSkin: "",
+	     });
+	}); 
+	</script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body>
+<div class="single">
+
+<div id="page">
+<div class="header">
+  <div id="lx-aside" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/post_cover.min.jpeg)" data-stellar-background-ratio="0.5">
+    <div class="overlay">
+      
+      <div class="page-title">
+        <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"></a></div>
+        <span>2025-03-06</span>
+        <h2>Metal Learni...</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/Metal/" rel="tag">Metal</a></div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+<div id="lx-main-content">
+  <div class="lx-post">
+    <div class="lx-entry padding">
+      <div>
+        <h3 id="1-初始化视图控制器（ViewController）"><a href="#1-初始化视图控制器（ViewController）" class="headerlink" title="1.初始化视图控制器（ViewController）"></a>1.初始化视图控制器（ViewController）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_view = (MTKView *)self.view; _view.device = MTLCreateSystemDefaultDevice(); // 设置默认Metal设备 _renderer = [[AAPLRenderer alloc] initWithMetalKitView:_view]; [_renderer mtkView:_view drawableSizeWillChange:_view.drawableSize]; _view.delegate = _renderer; // 将渲染器设置为MTKView的代理</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 <code>MTKView</code> 提供渲染画布。</li>
+<li>设置 Metal 设备。</li>
+<li>初始化并绑定<strong>自定义渲染器类</strong>。</li>
+</ul>
+<span id="more"></span>
+<h3 id="2-创建并初始化渲染器（Renderer）"><a href="#2-创建并初始化渲染器（Renderer）" class="headerlink" title="2.创建并初始化渲染器（Renderer）"></a>2.创建并初始化渲染器（Renderer）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_device = mtkView.device; _defaultLibrary = [_device newDefaultLibrary]; _vertexFunction = [_defaultLibrary newFunctionWithName:@&quot;vertexShader&quot;]; _fragmentFunction = [_defaultLibrary newFunctionWithName:@&quot;fragmentShader&quot;];</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>获取默认 <code>MTLLibrary</code></li>
+<li>从库中加载顶点和片段着色器函数。</li>
+</ul>
+<h3 id="3-配置并创建渲染管线（Pipeline）"><a href="#3-配置并创建渲染管线（Pipeline）" class="headerlink" title="3.配置并创建渲染管线（Pipeline）"></a>3.配置并创建渲染管线（Pipeline）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">MTLRenderPipelineDescriptor *pipelineStateDescriptor = [[MTLRenderPipelineDescriptor alloc] init]; pipelineStateDescriptor.vertexFunction = vertexFunction; pipelineStateDescriptor.fragmentFunction = fragmentFunction; pipelineStateDescriptor.colorAttachments[0].pixelFormat = mtkView.colorPixelFormat;  _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor error:&amp;error];</span><br><span class="line"></span><br><span class="line">_commandQueue = [_device newCommandQueue];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<ul>
+<li>设置渲染管线描述符，包括着色器、颜色格式等。</li>
+<li>创建并验证 <code>MTLRenderPipelineState</code>。</li>
+<li>创建命令队列（Command Queue）</li>
+</ul>
+<h3 id="4处理视图尺寸变更"><a href="#4处理视图尺寸变更" class="headerlink" title="4处理视图尺寸变更"></a>4处理视图尺寸变更</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">- (void)mtkView:(nonnull MTKView *)view drawableSizeWillChange:(CGSize)size</span><br><span class="line">&#123;</span><br><span class="line">    // Save the size of the drawable to pass to the vertex shader.</span><br><span class="line">    _viewportSize.x = size.width;</span><br><span class="line">    _viewportSize.y = size.height;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>viewportSize就是传给顶点着色器的当前view的尺寸</li>
+</ul>
+<h3 id="5-每帧渲染（drawInMTKView）"><a href="#5-每帧渲染（drawInMTKView）" class="headerlink" title="5 每帧渲染（drawInMTKView）"></a>5 每帧渲染（drawInMTKView）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">id&lt;MTLCommandBuffer&gt; commandBuffer = [_commandQueue commandBuffer]; MTLRenderPassDescriptor *renderPassDescriptor = view.currentRenderPassDescriptor;  id&lt;MTLRenderCommandEncoder&gt; renderEncoder = [commandBuffer renderCommandEncoderWithDescriptor:renderPassDescriptor]; [renderEncoder setRenderPipelineState:_pipelineState]; [renderEncoder setVertexBytes:triangleVertices length:sizeof(triangleVertices) atIndex:0]; [renderEncoder setVertexBytes:&amp;_viewportSize length:sizeof(_viewportSize) atIndex:1]; [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3]; [renderEncoder endEncoding]; [commandBuffer presentDrawable:view.currentDrawable]; [commandBuffer commit];</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建命令缓冲区: <code>MTLCommandBuffer</code></li>
+<li>获取并配置渲染描述符: <code>MTLRenderPassDescriptor</code></li>
+<li>创建一个encoder，设置渲染管线、传递顶点数据和视图大小等等。  </li>
+<li>绘制图形，<code>drawPrimitives</code>。</li>
+<li>提交命令并呈现结果。</li>
+</ul>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lx-navigation">
+	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2025/06/06/shader%2002/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Next</span>
+						<h3>Shader：...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+        <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2025/03/05/Metal%E6%95%99%E7%A8%8B01/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Prev</span>
+						<h3>Metal L...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+</div>
+
+<footer>
+  <div>
+  Copyright &copy; 2025.<a href="/">🥱</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
+  </div>
+</footer>
+
+</div>
+
+<button class="hamburger hamburger--arrow-r" type="button" title="menu">
+    <div class="hamburger-box">
+      <div class="hamburger-inner"></div>
+    </div>
+</button>
+<div class="menu visibility">
+  <div class="menu-head">
+    <span class="layer">
+      <div class="col">
+        <div class="row for-pic">
+          <div class="profile-pic">
+            <a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"/></a>
+          </div>
+        </div>
+        <div class="row for-name">
+          <p>Nandin</p>
+          <span class="tagline">Hello, World!</span>
+        </div>
+      </div>
+    </span>
+  </div>
+  <nav class="menu-container">
+  <ul class="menu-items">
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>Home</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+    
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-bookmark fa-fw"></i>Pages</span>
+        <ul>
+          <li><a href="/guestbook/">Guestbook</a></li>
+        <li><a href="/about/">About</a></li>
+        </ul>
+    </li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-link fa-fw"></i>Friends</span>
+        <ul>
+          <li> <a href="https://lx.js.org" target="_blank">Theme-Lx</a></li>
+        </ul>
+    </li>
+  </ul>
+  </nav>
+</div>
+
+<div class="gototop js-top">
+  <a href="#" class="js-gotop"><i class="fa fa-arrow-up"></i></a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.easing.min.js"></script>
+<script>
+(function () {
+	"use strict";
+	var goToTop = function() {
+		$(".js-gotop").on("click", function(event){
+			event.preventDefault();
+			$("html, body").animate({
+				scrollTop: $("html").offset().top
+			}, 500, "easeInOutExpo");
+			return false;
+		});
+		$(window).scroll(function(){
+			var $win = $(window);
+			if ($win.scrollTop() > 200) {
+				$(".js-top").addClass("active");
+			} else {
+				$(".js-top").removeClass("active");
+			}
+		});
+	};
+	$(function(){
+		goToTop();
+	});
+}());
+</script>
+
+
+</body>
+</html>

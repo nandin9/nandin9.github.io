@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme-color" content=#58b77a>
+  <title>Metal Learning 01：创建自定义的Metal View | 🥱</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Nandin">
+  <meta name="keywords" content="">
+  <meta name="description" content="">
+  <script id="hexo-configurations">
+  var CONFIG = {
+    root: '/',
+    theme: 'lx',
+    version: '0.4.4',
+    localsearch:{
+      "enable": false,
+      "trigger": "auto",
+      "top_n_per_article": 1,
+      "unescape": false,
+      "preload": false
+      },
+    path: 'null'
+  };
+</script>
+
+  <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/css/main.min.css">
+  
+  <style type="text/css">
+    pre,
+    code {
+      font-family: 'Fira Code', monospace;
+    }
+    html {
+      font-family: sans-serif;
+    }
+    body {
+      font-family: sans-serif;
+    }
+    h1, h2, h3, h4, h5, figure {
+      font-family: sans-serif;
+    }
+    .menu-container{
+      font-family: sans-serif;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.jside.menu.min.js"></script>
+	<script>
+	$(document).ready(function(){
+	$(".menu-container").jSideMenu({
+	    jSidePosition: "position-right",
+	    jSideSticky: true,
+	    jSideSkin: "",
+	     });
+	}); 
+	</script>
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Fira Code:300,300italic,400,400italic,700,700italic&display=swap&subset=latin,latin-ext">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4/css/font-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+<body>
+<div class="single">
+
+<div id="page">
+<div class="header">
+  <div id="lx-aside" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/post_cover.min.jpeg)" data-stellar-background-ratio="0.5">
+    <div class="overlay">
+      
+      <div class="page-title">
+        <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"></a></div>
+        <span>2025-03-05</span>
+        <h2>Metal Learni...</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/Metal/" rel="tag">Metal</a></div>
+        
+      </div>
+    </div>
+  </div>
+</div>
+<div id="lx-main-content">
+  <div class="lx-post">
+    <div class="lx-entry padding">
+      <div>
+        <h1 id="Metal-Learning：创建自定义的Metal-View"><a href="#Metal-Learning：创建自定义的Metal-View" class="headerlink" title="Metal Learning：创建自定义的Metal View"></a>Metal Learning：创建自定义的Metal View</h1><h3 id="1-准备渲染目标"><a href="#1-准备渲染目标" class="headerlink" title="1. 准备渲染目标"></a>1. 准备渲染目标</h3><p>在 Metal 下，最典型的做法是在自定义的 <code>NSView</code>（或 <code>UIView</code>）里把它的 <code>layerClass</code> 指定为 <code>CAMetalLayer</code>。这样一旦每帧需要绘制时，就能拿到一个 <code>CAMetalDrawable</code>，它自带一个 <code>texture</code>，就是本次渲染的“离屏纹理”，待渲染结束后由系统自动提交到屏幕。</p>
+<ul>
+<li>要指定 CAMetalLayer.pixelFormat</li>
+<li>通过 [metalLayer nextDrawable] 拿到一个 CAMetalDrawable，它的 texture 会成为本次渲染目标</li>
+</ul>
+<span id="more"></span>
+
+<h3 id="2-获取-MTLDevice"><a href="#2-获取-MTLDevice" class="headerlink" title="2. 获取 MTLDevice"></a>2. 获取 MTLDevice</h3><p><code>id&lt;MTLDevice&gt; device = MTLCreateSystemDefaultDevice();</code></p>
+<ul>
+<li><code>MTLDevice</code> 相当于一张 GPU “接口卡”。所有后续操作（创建缓冲、编译 Shader、创建 Pipeline、提交命令）都要基于同一个 <code>MTLDevice</code>。</li>
+<li>如果 <code>device == nil</code>，那么说明当前系统不支持 Metal。</li>
+</ul>
+<h3 id="3-配置-CAMetalLayer、displayLink"><a href="#3-配置-CAMetalLayer、displayLink" class="headerlink" title="3.配置 CAMetalLayer、displayLink"></a>3.配置 CAMetalLayer、displayLink</h3><p>在自定义的<code>NSView</code>子类里重写 <code>- (CALayer *)makeBackingLayer </code>，返回<code>[CAMetalLayer layer] </code>，<code>UIView</code> 的话重写 <code>+ (Class)layerClass</code>，让这个 View 的 layer 变成 CAMetalLayer。<br>启动 CADisplayLink 循环 ：UIView的情况下，<code> _displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(renderLoop)];</code><br>        <code>[_displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];</code> 这里renderLoop就是每一帧循环执行的方法！</p>
+<h3 id="4-初始化一些东西"><a href="#4-初始化一些东西" class="headerlink" title="4.初始化一些东西"></a>4.初始化一些东西</h3><p>可以在 自定义的<code>ViewController</code>的viewDidLoad里写一些渲染初始化设置，例如：（设置 pixelFormat、device、创建renderer）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">id&lt;MTLDevice&gt; device = MTLCreateSystemDefaultDevice();</span><br><span class="line"></span><br><span class="line">AAPLView *view = (AAPLView *)self.view;</span><br><span class="line"></span><br><span class="line">// Set the device for the layer so the layer can create drawable textures that can be rendered to</span><br><span class="line">// on this device.</span><br><span class="line">view.metalLayer.device = device;</span><br><span class="line"></span><br><span class="line">// Set this class as the delegate to receive resize and render callbacks.</span><br><span class="line">view.delegate = self;</span><br><span class="line"></span><br><span class="line">view.metalLayer.pixelFormat = MTLPixelFormatBGRA8Unorm_sRGB;</span><br><span class="line"></span><br><span class="line">_renderer = [[AAPLRenderer alloc] initWithMetalDevice:device</span><br><span class="line">                                  drawablePixelFormat:view.metalLayer.pixelFormat];</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>在自定义渲染器类renderer中初始化一些渲染必备对象：</p>
+<ul>
+<li>MTLRenderPassDescriptor: 描述本次渲染目标、loadAction、storeAction、clearColor；对照OpenGL 里就是绑定 Framebuffer、设置 glClearColor、glClear。</li>
+<li>MTLCommandQueue: 类似命令缓冲队列。commandQueue里可以获取MTLCommandBuffer，可包含若干个 Render + Compute 编码操作，最后 commit 提交给 GPU，若有多个 commandBuffer，可保证先后关系（在同一个 MTLCommandQueue 里顺序执行）。</li>
+<li>MTLLibrary: 存放编译好的 Metal Shader（.metal 文件编译后的二进制）。</li>
+<li>MTLFunction：着色器，对应于 Metal Shader 中的一段函数，比如 vertexShader、fragmentShader。使用 [shaderLib newFunctionWithName:@”vertexShader”] 获取。</li>
+<li>MTLBuffer：GPU 侧的缓冲区对象，通常用来存放顶点数据、索引数据、Uniform（常量）数据等。</li>
+<li>MTLTexture：GPU 侧的纹理对象。</li>
+<li>MTLRenderPipelineDescriptor：用来描述渲染管线状态：包括顶点函数、片元函数、颜色附着的像素格式、混合&#x2F;深度测试等状态。例如：</li>
+<li>MTLRenderPipelineState：是一个编译好的“渲染流水线状态对象”。在创建时会触发 Shader 编译、状态校验等工作。后续绘制时，只需要 <code>[setRenderPipelineState pipeLineState]</code>。创建时使用 &#96;[_device newRenderPipelineStateWithDescriptor: pipelineDescriptor]; &#96;&#96;&#96;</li>
+</ul>
+<h3 id="5-创建顶点数据并生成-MTLBuffer"><a href="#5-创建顶点数据并生成-MTLBuffer" class="headerlink" title="5. 创建顶点数据并生成 MTLBuffer"></a>5. 创建顶点数据并生成 MTLBuffer</h3><p>先定义一个顶点结构体（要与 .metal 中的 Vertex 对齐）</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    vector_float3 position;</span><br><span class="line">    vector_float4 color;</span><br><span class="line">&#125; Vertex;</span><br></pre></td></tr></table></figure>
+
+<p>准备三角形的三个顶点并上传到 GPU：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">// 定义三角形顶点：三个顶点各带 position + color</span><br><span class="line">    static const Vertex triangleVertices[] = &#123;</span><br><span class="line">        // position(x,y,z)           color(r,g,b,a)</span><br><span class="line">        &#123; &#123;  0.0,  0.5, 0.0 &#125;, &#123; 1, 0, 0, 1 &#125; &#125;,  // 顶部，红色</span><br><span class="line">        &#123; &#123; -0.5, -0.5, 0.0 &#125;, &#123; 0, 1, 0, 1 &#125; &#125;,  // 左下，绿色</span><br><span class="line">        &#123; &#123;  0.5, -0.5, 0.0 &#125;, &#123; 0, 0, 1, 1 &#125; &#125;   // 右下，蓝色</span><br><span class="line">    &#125;;</span><br><span class="line">    // 创建一个 MTLBuffer，将数据 copy 到 GPU</span><br><span class="line">    _vertexBuffer = [_device newBufferWithBytes:triangleVertices</span><br><span class="line">                                         length:sizeof(triangleVertices)</span><br><span class="line">                                        options:MTLResourceStorageModeShared];</span><br><span class="line">                                        // 注意：Shared 模式适合 CPU/GPU 都要访问的场景；如果只是 GPU 读取，可以用 Private</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+<h3 id="6-每帧绘制流程"><a href="#6-每帧绘制流程" class="headerlink" title="6. 每帧绘制流程"></a>6. 每帧绘制流程</h3><p>第三步的时候创建了一个 CADisplayLink，调用 renderLoop。也可以在外部直接调用比如手动按钮触发、或者在 view 的 drawRect: 里渲染。这里只以 displayLink 回调为例，大概需要做以下事情：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">- (void)render &#123;</span><br><span class="line">    // 1. 从 CAMetalLayer 拿当期可用的 drawable</span><br><span class="line">    id&lt;CAMetalDrawable&gt; drawable = [_metalLayer nextDrawable];</span><br><span class="line">    if (!drawable) return;</span><br><span class="line"></span><br><span class="line">    // 2. 创建一个 MTLRenderPassDescriptor，并指定 color attachment</span><br><span class="line">    MTLRenderPassDescriptor *rpd = [MTLRenderPassDescriptor renderPassDescriptor];</span><br><span class="line">    // colorAttachments[0] 对应第一个 color 缓冲</span><br><span class="line">    rpd.colorAttachments[0].texture       = drawable.texture;</span><br><span class="line">    rpd.colorAttachments[0].loadAction    = MTLLoadActionClear;</span><br><span class="line">    rpd.colorAttachments[0].storeAction   = MTLStoreActionStore;</span><br><span class="line">    rpd.colorAttachments[0].clearColor    = MTLClearColorMake(0.2, 0.3, 0.3, 1.0); // 清屏颜色</span><br><span class="line"></span><br><span class="line">    // 如果有深度缓冲，需要额外赋值 depthAttachment</span><br><span class="line">    </span><br><span class="line">    // 3. 创建 CommandBuffer</span><br><span class="line">    id&lt;MTLCommandBuffer&gt; commandBuffer = [_commandQueue commandBuffer];</span><br><span class="line"></span><br><span class="line">    // 4. 在 CommandBuffer 上创建 RenderCommandEncoder</span><br><span class="line">    id&lt;MTLRenderCommandEncoder&gt; renderEncoder =</span><br><span class="line">        [commandBuffer renderCommandEncoderWithDescriptor:rpd];</span><br><span class="line"></span><br><span class="line">    // 5. 设置 PipelineState</span><br><span class="line">    [renderEncoder setRenderPipelineState:_pipelineState];</span><br><span class="line"></span><br><span class="line">    // 6. 绑定顶点缓冲（以及其他 Uniform/Texture 资源）</span><br><span class="line">    // 由于我们的 shader 在 attribute(0) 和 attribute(1) 都是同一个 buffer，通过 offset 拆分</span><br><span class="line">    [renderEncoder setVertexBuffer:_vertexBuffer offset:0 atIndex:0];</span><br><span class="line">    // 如果 shader 里用 attribute(1)，也可以：</span><br><span class="line">    // [renderEncoder setVertexBuffer:_vertexBuffer offset:offsetof(Vertex, color) atIndex:1];</span><br><span class="line"></span><br><span class="line">    // 7. 发出绘制命令：绘制三角形（3 个顶点，从顶点索引 0 开始）</span><br><span class="line">    [renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle</span><br><span class="line">                      vertexStart:0</span><br><span class="line">                      vertexCount:3];</span><br><span class="line"></span><br><span class="line">    // 8. 结束 Encoding</span><br><span class="line">    [renderEncoder endEncoding];</span><br><span class="line"></span><br><span class="line">    // 9. 呈现 drawable（把渲染结果推到屏幕）</span><br><span class="line">    [commandBuffer presentDrawable:drawable];</span><br><span class="line"></span><br><span class="line">    // 10. 提交命令到 GPU</span><br><span class="line">    [commandBuffer commit];</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>MTLRenderCommandEncoder: 在 MTLCommandBuffer 内记录一次渲染操作，依次：setRenderPipelineState:、setVertexBuffer:、drawPrimitives:，然后 endEncoding。即，将渲染状态转换为设备可以执行的代码。</li>
+</ul>
+<p>大概就是这样…</p>
+
+      </div>
+    </div>
+  </div>
+</div>
+<div class="lx-navigation">
+	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2025/03/06/Metal%E6%A0%87%E5%87%86%E6%B8%B2%E6%9F%93%E6%AD%A5%E9%AA%A402/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Next</span>
+						<h3>Metal L...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+        <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
+		<div class="overlay"></div>
+		<a class="copy" href="/2024/12/15/flutterCursor/">
+			<div class="display-t">
+				<div class="display-tc">
+					<div>
+						<span>Prev</span>
+						<h3>flutter...</h3>
+					</div>
+				</div>
+			</div>
+		</a>
+	</div>
+</div>
+
+</div>
+
+<footer>
+  <div>
+  Copyright &copy; 2025.<a href="/">🥱</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
+  </div>
+</footer>
+
+</div>
+
+<button class="hamburger hamburger--arrow-r" type="button" title="menu">
+    <div class="hamburger-box">
+      <div class="hamburger-inner"></div>
+    </div>
+</button>
+<div class="menu visibility">
+  <div class="menu-head">
+    <span class="layer">
+      <div class="col">
+        <div class="row for-pic">
+          <div class="profile-pic">
+            <a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"/></a>
+          </div>
+        </div>
+        <div class="row for-name">
+          <p>Nandin</p>
+          <span class="tagline">Hello, World!</span>
+        </div>
+      </div>
+    </span>
+  </div>
+  <nav class="menu-container">
+  <ul class="menu-items">
+    <li><a href="/"><i class="fa fa-home fa-fw"></i>Home</a></li>
+    <li><a href="/archives/"><i class="fa fa-archive fa-fw"></i>Archives</a></li>
+    
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-bookmark fa-fw"></i>Pages</span>
+        <ul>
+          <li><a href="/guestbook/">Guestbook</a></li>
+        <li><a href="/about/">About</a></li>
+        </ul>
+    </li>
+    <li class="has-sub"><span class="dropdown-heading">
+      <i class="fa fa-link fa-fw"></i>Friends</span>
+        <ul>
+          <li> <a href="https://lx.js.org" target="_blank">Theme-Lx</a></li>
+        </ul>
+    </li>
+  </ul>
+  </nav>
+</div>
+
+<div class="gototop js-top">
+  <a href="#" class="js-gotop"><i class="fa fa-arrow-up"></i></a>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/js/jquery.easing.min.js"></script>
+<script>
+(function () {
+	"use strict";
+	var goToTop = function() {
+		$(".js-gotop").on("click", function(event){
+			event.preventDefault();
+			$("html, body").animate({
+				scrollTop: $("html").offset().top
+			}, 500, "easeInOutExpo");
+			return false;
+		});
+		$(window).scroll(function(){
+			var $win = $(window);
+			if ($win.scrollTop() > 200) {
+				$(".js-top").addClass("active");
+			} else {
+				$(".js-top").removeClass("active");
+			}
+		});
+	};
+	$(function(){
+		goToTop();
+	});
+}());
+</script>
+
+
+</body>
+</html>

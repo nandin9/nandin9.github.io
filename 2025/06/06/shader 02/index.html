@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="theme-color" content=#58b77a>
-  <title>Hello World | 🥱</title>
+  <title>Shader：随机数 | 🥱</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="Nandin">
   <meta name="keywords" content="">
@@ -73,9 +73,9 @@
       
       <div class="page-title">
         <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"></a></div>
-        <span>2024-09-26</span>
-        <h2>Hello World</h2>
-        
+        <span>2025-06-06</span>
+        <h2>Shader：随机数</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/Shader/" rel="tag">Shader</a></div>
         
       </div>
     </div>
@@ -85,19 +85,19 @@
   <div class="lx-post">
     <div class="lx-entry padding">
       <div>
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+        <h3 id="shader里生成随机数的套路"><a href="#shader里生成随机数的套路" class="headerlink" title="shader里生成随机数的套路"></a>shader里生成随机数的套路</h3><p><img src="/../images/random01.png" alt="fract函数取小数"></p>
+<p><img src="/../images/random01.png" alt="为随机数生成"></p>
+<span id="more"></span>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// 如上图所示</span><br><span class="line">float random (in float x) &#123; </span><br><span class="line">    return fract(sin(x)*323434.34344); </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 经典的 2D 伪随机函数写法，这几个“奇怪的数字”不是随便乱写的，也不是必须完全固定，跟这个数字差不多大小的其他数字效果也差不多，</span><br><span class="line">// 但这几个应该是经过实践验证具有较好分布特性的数值组合。。。</span><br><span class="line">float random (vec2 st) &#123;</span><br><span class="line">    return fract(sin(dot(st.xy, vec2(565656.233,123123.2033))) * 323434.34344);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// 同理，二维生成二维随机</span><br><span class="line">vec2 random2(vec2 p) &#123;</span><br><span class="line">    return fract(sin(vec2(dot(p,vec2(234234.1,54544.7)), sin(dot(p,vec2(33332.5,18563.3))))) *323434.34344);</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+<h3 id="把屏幕分成n-m的网格"><a href="#把屏幕分成n-m的网格" class="headerlink" title="把屏幕分成n*m的网格"></a>把屏幕分成n*m的网格</h3><p>shader里坐标是 uv（[0, 1]）表示的, 把 uv 放大数倍，再对每个片段 shader 取小数部分拿来当新的 uv 用，这样就是在屏幕上产生了多个 xy 是 0 到 1 的区域。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">vec2 uv = fragCoord.xy/iResolution.xy;</span><br><span class="line">uv *= 10.0;              //横向纵向都扩大10倍</span><br><span class="line">vec2 ipos = floor(uv);   // 整数部分组成二维数组：网格的坐标</span><br><span class="line">vec2 fpos = fract(uv);   // 小数部分组成二维数组：网格内的UV   </span><br></pre></td></tr></table></figure>
 
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+<h3 id="应用"><a href="#应用" class="headerlink" title="应用"></a>应用</h3><ol>
+<li><a target="_blank" rel="noopener" href="https://www.shadertoy.com/view/wc3SR2">https://www.shadertoy.com/view/wc3SR2</a></li>
+</ol>
+<p>参考：<a target="_blank" rel="noopener" href="https://thebookofshaders.com/10/?lan=ch">https://thebookofshaders.com/10/?lan=ch</a></p>
 
       </div>
     </div>
@@ -106,12 +106,12 @@
 <div class="lx-navigation">
 	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
 		<div class="overlay"></div>
-		<a class="copy" href="/2024/10/03/appkituikitswiftui/">
+		<a class="copy" href="/2025/06/07/Metal%20depth%20buffer03/">
 			<div class="display-t">
 				<div class="display-tc">
 					<div>
 						<span>Next</span>
-						<h3>AppKit/...</h3>
+						<h3></h3>
 					</div>
 				</div>
 			</div>
@@ -119,12 +119,12 @@
 	</div>
         <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
 		<div class="overlay"></div>
-		<a class="copy" href="#">
+		<a class="copy" href="/2025/03/06/Metal%E6%A0%87%E5%87%86%E6%B8%B2%E6%9F%93%E6%AD%A5%E9%AA%A402/">
 			<div class="display-t">
 				<div class="display-tc">
 					<div>
 						<span>Prev</span>
-						<h3>No older post</h3>
+						<h3>Metal L...</h3>
 					</div>
 				</div>
 			</div>

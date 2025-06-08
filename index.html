@@ -85,6 +85,101 @@
 
   <div class="lx-entry padding">
     <div>
+      <h2 class="title"><a href="/2025/06/08/shader%2003/">Shader：星云shader分析</a></h2>
+      <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2025-06-08 | <i class="fa fa-folder-o"></i> <a class="category-link" href="/categories/Shader/">Shader</a>,<a class="category-link" href="/categories/Shader/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/">图形图像</a>,<a class="category-link" href="/categories/Shader/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/%E6%B8%B2%E6%9F%93/">渲染</a></span>
+      <p><p>使用光线步进（Raymarching）和分形迭代技术生成复杂的3D分形结构。以下是对代码的详细解释：</p>
+<ol>
+<li>宏定义和全局设置<br>glsl</li>
+</ol>
+<p>#define rot(a) mat2(cos(a),sin(a),-sin(a),cos(a)) &#x2F;&#x2F; 2D旋转矩阵宏<br>定义一个用于2D旋转的矩阵宏，简化旋转变换操作。</p>
+<ol start="2">
+<li><p>主函数初始化<br>glsl<br>void mainImage(out vec4 O, vec2 u) {<br> float t &#x3D; iTime*.01 + .25; &#x2F;&#x2F; 时间变量（缩放+偏移）<br> float s &#x3D; .1;             &#x2F;&#x2F; 光线步进初始步长<br> float f &#x3D; 1.;             &#x2F;&#x2F; 颜色衰减因子<br> float a, l;               &#x2F;&#x2F; 分形迭代累加器&#x2F;临时距离</p>
+<p> vec3 R &#x3D; iResolution;     &#x2F;&#x2F; 分辨率<br> vec3 p;                   &#x2F;&#x2F; 当前点坐标<br> vec3 D &#x3D; vec3((u - .5<em>R.xy)&#x2F;R.x</em>.4, .5); &#x2F;&#x2F; 光线方向<br> vec3 o &#x3D; vec3(1,.5,.5) + vec3(t+t, t, -2); &#x2F;&#x2F; 摄像机位置（随时间移动）</p>
+<p> O -&#x3D; O; &#x2F;&#x2F; 清零输出颜色</p>
+</li>
+</ol>
+<p>光线方向计算：</p>
+<p>将像素坐标 u 从屏幕空间转换到标准化设备坐标（中心为原点）。</p>
+<p>D.z &#x3D; 0.5 控制视角倾斜角度。</p>
+<p>摄像机动画：</p>
+<p>摄像机位置 o 在X、Y轴随时间平移，Z轴固定为 -2（向后）。</p>
+<ol start="3">
+<li><p>场景旋转<br>glsl<br>mat2 r1 &#x3D; rot(.5); &#x2F;&#x2F; 创建旋转矩阵（0.5弧度）<br>D.xz *&#x3D; r1;        &#x2F;&#x2F; 旋转光线方向<br>o.xz *&#x3D; r1;        &#x2F;&#x2F; 旋转摄像机位置<br>对场景的XZ平面进行旋转，增加动态效果。</p>
+</li>
+<li><p>主循环：光线步进 + 分形迭代<br>glsl<br>for (int i, r &#x3D; 0; r++ &lt; 20; ) {<br> &#x2F;&#x2F; 1. 光线步进并折叠空间<br> p &#x3D; abs(mod(o + s * D, 1.7) - .85);</p>
+<p> &#x2F;&#x2F; 2. Kleinian分形迭代 (17次)<br> a &#x3D; t &#x3D; 0.;<br> for (i &#x3D; 0; i++ &lt; 17; ) {<br> l &#x3D; length(p);             &#x2F;&#x2F; 计算当前距离<br> a +&#x3D; abs(l - t);            &#x2F;&#x2F; 累加距离变化量<br> t &#x3D; l;                     &#x2F;&#x2F; 保存旧距离<br> p &#x3D; abs(p) &#x2F; dot(p,p) - .53; &#x2F;&#x2F; 核心分形公式<br> }</p>
+<p> &#x2F;&#x2F; 3. 计算分形特征强度<br> a *&#x3D; a * a; &#x2F;&#x2F; 立方放大细节</p>
+<p> &#x2F;&#x2F; 4. 颜色衰减控制<br> if (r &gt; 7) f <em>&#x3D; min(1., .7 + a</em>a*.001); </p>
+<p> &#x2F;&#x2F; 5. 累加颜色 (RGB通道独立计算)<br> O.rgb +&#x3D; f + s * vec3(1, s, s<em>s</em>s) * a * .0015 * f;</p>
+<p> &#x2F;&#x2F; 6. 更新步进参数<br> f *&#x3D; .73;  &#x2F;&#x2F; 颜色衰减<br> s +&#x3D; .1;   &#x2F;&#x2F; 增加步长</p>
+</li>
+</ol>
+<p>}<br>核心分形公式解析：<br>glsl<br>p &#x3D; abs(p) &#x2F; dot(p,p) - .53<br>abs(p)：折叠空间到第一象限，创造对称性。</p>
+<p>&#x2F; dot(p,p)：球面反演（球心在原点），将远离中心的点拉近。</p>
+<ul>
+<li>.53：平移创造自相似结构。</li>
+</ul>
+<p>迭代17次形成无限递归的细节。</p>
+<p>颜色累加技巧：<br>vec3(1, s, s<em>s</em>s)：</p>
+<p>R通道：基础白色</p>
+<p>G通道：随步长 s 变绿</p>
+<p>B通道：s³ 产生蓝色渐变</p>
+<p>a*.0015*f：用分形特征强度调制颜色</p>
+<p>s * …：距离越远颜色贡献越大</p>
+<ol start="5">
+<li>后处理与输出<br>glsl<br>O &#x3D; .0085 * O + .0015 * length(O);<br>0.0085 * O：基础亮度缩放</li>
+</ol>
+<p>0.0015 * length(O)：根据整体亮度添加泛光效果</p>
+<p>使亮区产生光晕，增强立体感</p>
+</p>
+      <div class="post-button"><a class="btn" href="/2025/06/08/shader%2003/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+    </div>
+  </div>
+  <div class="lx-entry padding">
+    <div>
+      <h2 class="title"><a href="/2025/06/07/Metal%20depth%20buffer03/"></a></h2>
+      <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2025-06-07</span>
+      <p></p>
+      <div class="post-button"><a class="btn" href="/2025/06/07/Metal%20depth%20buffer03/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+    </div>
+  </div>
+  <div class="lx-entry padding">
+    <div>
+      <h2 class="title"><a href="/2025/06/06/shader%2002/">Shader：随机数</a></h2>
+      <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2025-06-06 | <i class="fa fa-folder-o"></i> <a class="category-link" href="/categories/Shader/">Shader</a>,<a class="category-link" href="/categories/Shader/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/">图形图像</a>,<a class="category-link" href="/categories/Shader/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/%E6%B8%B2%E6%9F%93/">渲染</a></span>
+      <p><h3 id="shader里生成随机数的套路"><a href="#shader里生成随机数的套路" class="headerlink" title="shader里生成随机数的套路"></a>shader里生成随机数的套路</h3><p><img src="/../images/random01.png" alt="fract函数取小数"></p>
+<p><img src="/../images/random01.png" alt="为随机数生成"></p></p>
+      <div class="post-button"><a class="btn" href="/2025/06/06/shader%2002/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+    </div>
+  </div>
+  <div class="lx-entry padding">
+    <div>
+      <h2 class="title"><a href="/2025/03/06/Metal%E6%A0%87%E5%87%86%E6%B8%B2%E6%9F%93%E6%AD%A5%E9%AA%A402/">Metal Learning 02：Metal渲染步骤</a></h2>
+      <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2025-03-06 | <i class="fa fa-folder-o"></i> <a class="category-link" href="/categories/Metal/">Metal</a>,<a class="category-link" href="/categories/Metal/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/">图形图像</a>,<a class="category-link" href="/categories/Metal/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/%E6%B8%B2%E6%9F%93/">渲染</a></span>
+      <p><h3 id="1-初始化视图控制器（ViewController）"><a href="#1-初始化视图控制器（ViewController）" class="headerlink" title="1.初始化视图控制器（ViewController）"></a>1.初始化视图控制器（ViewController）</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_view = (MTKView *)self.view; _view.device = MTLCreateSystemDefaultDevice(); // 设置默认Metal设备 _renderer = [[AAPLRenderer alloc] initWithMetalKitView:_view]; [_renderer mtkView:_view drawableSizeWillChange:_view.drawableSize]; _view.delegate = _renderer; // 将渲染器设置为MTKView的代理</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>使用 <code>MTKView</code> 提供渲染画布。</li>
+<li>设置 Metal 设备。</li>
+<li>初始化并绑定<strong>自定义渲染器类</strong>。</li>
+</ul></p>
+      <div class="post-button"><a class="btn" href="/2025/03/06/Metal%E6%A0%87%E5%87%86%E6%B8%B2%E6%9F%93%E6%AD%A5%E9%AA%A402/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+    </div>
+  </div>
+  <div class="lx-entry padding">
+    <div>
+      <h2 class="title"><a href="/2025/03/05/Metal%E6%95%99%E7%A8%8B01/">Metal Learning 01：创建自定义的Metal View</a></h2>
+      <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2025-03-05 | <i class="fa fa-folder-o"></i> <a class="category-link" href="/categories/Metal/">Metal</a>,<a class="category-link" href="/categories/Metal/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/">图形图像</a>,<a class="category-link" href="/categories/Metal/%E5%9B%BE%E5%BD%A2%E5%9B%BE%E5%83%8F/%E6%B8%B2%E6%9F%93/">渲染</a></span>
+      <p><h1 id="Metal-Learning：创建自定义的Metal-View"><a href="#Metal-Learning：创建自定义的Metal-View" class="headerlink" title="Metal Learning：创建自定义的Metal View"></a>Metal Learning：创建自定义的Metal View</h1><h3 id="1-准备渲染目标"><a href="#1-准备渲染目标" class="headerlink" title="1. 准备渲染目标"></a>1. 准备渲染目标</h3><p>在 Metal 下，最典型的做法是在自定义的 <code>NSView</code>（或 <code>UIView</code>）里把它的 <code>layerClass</code> 指定为 <code>CAMetalLayer</code>。这样一旦每帧需要绘制时，就能拿到一个 <code>CAMetalDrawable</code>，它自带一个 <code>texture</code>，就是本次渲染的“离屏纹理”，待渲染结束后由系统自动提交到屏幕。</p>
+<ul>
+<li>要指定 CAMetalLayer.pixelFormat</li>
+<li>通过 [metalLayer nextDrawable] 拿到一个 CAMetalDrawable，它的 texture 会成为本次渲染目标</li>
+</ul></p>
+      <div class="post-button"><a class="btn" href="/2025/03/05/Metal%E6%95%99%E7%A8%8B01/" rel="noopener"><i class="fa fa-angle-double-right fa-fw"></i>Read More</a></div>
+    </div>
+  </div>
+  <div class="lx-entry padding">
+    <div>
       <h2 class="title"><a href="/2024/12/15/flutterCursor/">flutter文本的桌面端鼠标hover样式踩坑</a></h2>
       <span class="lx-post-detail"><i class="fa fa-calendar-o"></i> 2024-12-15 | <i class="fa fa-folder-o"></i> <a class="category-link" href="/categories/flutter/">flutter</a>,<a class="category-link" href="/categories/flutter/macos/">macos</a></span>
       <p><p>flutter富文本桌面端的鼠标cursor样式对优化交互体验蛮重要的，记录一些工作中自己踩过的坑 …</p>
@@ -150,7 +245,7 @@
 
 <footer>
   <div>
-  Copyright &copy; 2024.<a href="/">🥱</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
+  Copyright &copy; 2025.<a href="/">🥱</a><br>Powered by <a href="https://hexo.io" target="_blank">Hexo</a> | Theme <a href="https://lx.js.org" target="_blank">Lx</a><br>
   </div>
 </footer>
 

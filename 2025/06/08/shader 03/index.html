@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="theme-color" content=#58b77a>
-  <title>Hello World | 🥱</title>
+  <title>Shader：星云shader分析 | 🥱</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="author" content="Nandin">
   <meta name="keywords" content="">
@@ -73,9 +73,9 @@
       
       <div class="page-title">
         <div class="avatar"><a href="/"><img src="https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/avatar.min.jpeg" alt="Nandin"></a></div>
-        <span>2024-09-26</span>
-        <h2>Hello World</h2>
-        
+        <span>2025-06-08</span>
+        <h2>Shader：星云sha...</h2>
+        <div class="tags"><i class="fa fa-tag"></i><a class="tag-none-link" href="/tags/Shader/" rel="tag">Shader</a></div>
         
       </div>
     </div>
@@ -85,19 +85,50 @@
   <div class="lx-post">
     <div class="lx-entry padding">
       <div>
-        <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+        <p>使用光线步进（Raymarching）和分形迭代技术生成复杂的3D分形结构。以下是对代码的详细解释：</p>
+<ol>
+<li>宏定义和全局设置<br>glsl</li>
+</ol>
+<p>#define rot(a) mat2(cos(a),sin(a),-sin(a),cos(a)) &#x2F;&#x2F; 2D旋转矩阵宏<br>定义一个用于2D旋转的矩阵宏，简化旋转变换操作。</p>
+<ol start="2">
+<li><p>主函数初始化<br>glsl<br>void mainImage(out vec4 O, vec2 u) {<br> float t &#x3D; iTime*.01 + .25; &#x2F;&#x2F; 时间变量（缩放+偏移）<br> float s &#x3D; .1;             &#x2F;&#x2F; 光线步进初始步长<br> float f &#x3D; 1.;             &#x2F;&#x2F; 颜色衰减因子<br> float a, l;               &#x2F;&#x2F; 分形迭代累加器&#x2F;临时距离</p>
+<p> vec3 R &#x3D; iResolution;     &#x2F;&#x2F; 分辨率<br> vec3 p;                   &#x2F;&#x2F; 当前点坐标<br> vec3 D &#x3D; vec3((u - .5<em>R.xy)&#x2F;R.x</em>.4, .5); &#x2F;&#x2F; 光线方向<br> vec3 o &#x3D; vec3(1,.5,.5) + vec3(t+t, t, -2); &#x2F;&#x2F; 摄像机位置（随时间移动）</p>
+<p> O -&#x3D; O; &#x2F;&#x2F; 清零输出颜色</p>
+</li>
+</ol>
+<p>光线方向计算：</p>
+<p>将像素坐标 u 从屏幕空间转换到标准化设备坐标（中心为原点）。</p>
+<p>D.z &#x3D; 0.5 控制视角倾斜角度。</p>
+<p>摄像机动画：</p>
+<p>摄像机位置 o 在X、Y轴随时间平移，Z轴固定为 -2（向后）。</p>
+<ol start="3">
+<li><p>场景旋转<br>glsl<br>mat2 r1 &#x3D; rot(.5); &#x2F;&#x2F; 创建旋转矩阵（0.5弧度）<br>D.xz *&#x3D; r1;        &#x2F;&#x2F; 旋转光线方向<br>o.xz *&#x3D; r1;        &#x2F;&#x2F; 旋转摄像机位置<br>对场景的XZ平面进行旋转，增加动态效果。</p>
+</li>
+<li><p>主循环：光线步进 + 分形迭代<br>glsl<br>for (int i, r &#x3D; 0; r++ &lt; 20; ) {<br> &#x2F;&#x2F; 1. 光线步进并折叠空间<br> p &#x3D; abs(mod(o + s * D, 1.7) - .85);</p>
+<p> &#x2F;&#x2F; 2. Kleinian分形迭代 (17次)<br> a &#x3D; t &#x3D; 0.;<br> for (i &#x3D; 0; i++ &lt; 17; ) {<br> l &#x3D; length(p);             &#x2F;&#x2F; 计算当前距离<br> a +&#x3D; abs(l - t);            &#x2F;&#x2F; 累加距离变化量<br> t &#x3D; l;                     &#x2F;&#x2F; 保存旧距离<br> p &#x3D; abs(p) &#x2F; dot(p,p) - .53; &#x2F;&#x2F; 核心分形公式<br> }</p>
+<p> &#x2F;&#x2F; 3. 计算分形特征强度<br> a *&#x3D; a * a; &#x2F;&#x2F; 立方放大细节</p>
+<p> &#x2F;&#x2F; 4. 颜色衰减控制<br> if (r &gt; 7) f <em>&#x3D; min(1., .7 + a</em>a*.001); </p>
+<p> &#x2F;&#x2F; 5. 累加颜色 (RGB通道独立计算)<br> O.rgb +&#x3D; f + s * vec3(1, s, s<em>s</em>s) * a * .0015 * f;</p>
+<p> &#x2F;&#x2F; 6. 更新步进参数<br> f *&#x3D; .73;  &#x2F;&#x2F; 颜色衰减<br> s +&#x3D; .1;   &#x2F;&#x2F; 增加步长</p>
+</li>
+</ol>
+<p>}<br>核心分形公式解析：<br>glsl<br>p &#x3D; abs(p) &#x2F; dot(p,p) - .53<br>abs(p)：折叠空间到第一象限，创造对称性。</p>
+<p>&#x2F; dot(p,p)：球面反演（球心在原点），将远离中心的点拉近。</p>
+<ul>
+<li>.53：平移创造自相似结构。</li>
+</ul>
+<p>迭代17次形成无限递归的细节。</p>
+<p>颜色累加技巧：<br>vec3(1, s, s<em>s</em>s)：</p>
+<p>R通道：基础白色</p>
+<p>G通道：随步长 s 变绿</p>
+<p>B通道：s³ 产生蓝色渐变</p>
+<p>a*.0015*f：用分形特征强度调制颜色</p>
+<p>s * …：距离越远颜色贡献越大</p>
+<ol start="5">
+<li>后处理与输出<br>glsl<br>O &#x3D; .0085 * O + .0015 * length(O);<br>0.0085 * O：基础亮度缩放</li>
+</ol>
+<p>0.0015 * length(O)：根据整体亮度添加泛光效果</p>
+<p>使亮区产生光晕，增强立体感</p>
 
       </div>
     </div>
@@ -106,12 +137,12 @@
 <div class="lx-navigation">
 	<div class="lx-cover next lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-l.min.jpeg)">
 		<div class="overlay"></div>
-		<a class="copy" href="/2024/10/03/appkituikitswiftui/">
+		<a class="copy" href="#">
 			<div class="display-t">
 				<div class="display-tc">
 					<div>
 						<span>Next</span>
-						<h3>AppKit/...</h3>
+						<h3>No newer post</h3>
 					</div>
 				</div>
 			</div>
@@ -119,12 +150,12 @@
 	</div>
         <div class="lx-cover prev lx-cover-sm" style="background-image: url(https://cdn.jsdelivr.net/npm/theme-lx@0.4.4/source/dist/images/footer-r.min.jpeg)">
 		<div class="overlay"></div>
-		<a class="copy" href="#">
+		<a class="copy" href="/2025/06/07/Metal%20depth%20buffer03/">
 			<div class="display-t">
 				<div class="display-tc">
 					<div>
 						<span>Prev</span>
-						<h3>No older post</h3>
+						<h3></h3>
 					</div>
 				</div>
 			</div>
